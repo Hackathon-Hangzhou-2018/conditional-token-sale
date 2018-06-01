@@ -58,11 +58,11 @@ eventBus.on('new_my_transactions', (arrUnits) => {
 		function (rows) {
 			rows.forEach(row => {
 				if (row.received_asset !== conf.assetToReceive)
-					return device.sendMessageToDevice(row.peer_device_address, 'text', "Received payment in wrong asset");
+					return device.sendMessageToDevice(row.peer_device_address, 'text', "收到错误资产的付款");
 				if (row.amount !== row.peer_amount)
-					return device.sendMessageToDevice(row.peer_device_address, 'text', "Received wrong amount: expected " + row.peer_amount + ", received " + row.amount);
+					return device.sendMessageToDevice(row.peer_device_address, 'text', "收到错误的数字: 预期 " + row.peer_amount + ", 收到 " + row.amount);
 				assocWaitingStableSharedAddressByUnits[row.unit] = row.shared_address;
-				device.sendMessageToDevice(row.peer_device_address, 'text', "Received your payment, waiting for confirmation.");
+				device.sendMessageToDevice(row.peer_device_address, 'text', "已收到你的付款，请耐心等待被确认");
 			});
 		}
 	);
@@ -93,7 +93,7 @@ eventBus.on('text', (from_address, text) => {
 				}
 				let amount_in_user_units = assocAmountByDeviceAddress[from_address] / conf.assetToSellUnitValue;
 				delete assocAmountByDeviceAddress[from_address];
-				return device.sendMessageToDevice(from_address, 'text', 'This is your contract that holds '+amount_in_user_units+' '+conf.assetToSellName+', please check and pay within 15 minutes: ' + paymentRequestText);
+				return device.sendMessageToDevice(from_address, 'text', '这是你的合约，持有 '+amount_in_user_units+' '+conf.assetToSellName+', 请在15分钟内核对并付款: ' + paymentRequestText);
 			});
 		});
 	} else if (/[\d.]+\b/.test(ucText)) {
@@ -102,14 +102,14 @@ eventBus.on('text', (from_address, text) => {
 			if (amount % conf.assetToSellMultiple === 0) {
 				assocAmountByDeviceAddress[from_address] = amount;
 				return device.sendMessageToDevice(from_address, 'text',
-					"Buying: " + (amount / conf.assetToReceiveUnitValue) + ' ' + conf.assetToSellName + '\n' +
-					"You'll pay: " + ((amount * conf.exchangeRate) / conf.assetToReceiveUnitValue) + ' ' + conf.assetToReceiveName + '\n' +
-					'To continue, send me your address (click ... and Insert my address).');
+					"正在购买: " + (amount / conf.assetToReceiveUnitValue) + ' ' + conf.assetToSellName + '\n' +
+					"你将支付: " + ((amount * conf.exchangeRate) / conf.assetToReceiveUnitValue) + ' ' + conf.assetToReceiveName + '\n' +
+					'输入地址后继续 (点击 ... 输入地址.');
 			} else {
-				return device.sendMessageToDevice(from_address, 'text', 'The number is not a multiple of ' + (conf.assetToSellMultiple/conf.assetToSellUnitValue));
+				return device.sendMessageToDevice(from_address, 'text', '这个数字不是 ' + (conf.assetToSellMultiple/conf.assetToSellUnitValue));
 			}
 		}else{
-			return device.sendMessageToDevice(from_address, 'text', 'Enter a number greater than zero');
+			return device.sendMessageToDevice(from_address, 'text', '请输入大于 0 的数字');
 		}
 	} else {
 		return device.sendMessageToDevice(from_address, 'text', texts.help());
